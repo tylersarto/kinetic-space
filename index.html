@@ -7,8 +7,24 @@
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
+    #bg-video {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -2;
+    }
+
+    #bg-scrim {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.48);
+      z-index: -1;
+    }
+
     body {
-      background: #0b0b0b;
+      background: transparent;
       min-height: 100vh;
       font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
       overflow-y: auto;
@@ -24,7 +40,7 @@
     /* ── Bento Grid ───────────────────────────────────────────────────────── */
     .bento {
       display: grid;
-      grid-template-columns: 268px 1fr 188px;
+      grid-template-columns: 1fr 248px;
       grid-template-rows: 1fr 1fr;
       gap: 10px;
       width: min(960px, calc(100vw - 32px));
@@ -32,14 +48,25 @@
     }
 
     .card {
-      background: #131313;
-      border: 1px solid rgba(255,255,255,0.055);
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(16px) saturate(160%);
+      -webkit-backdrop-filter: blur(16px) saturate(160%);
+      border: 1px solid rgba(255,255,255,0.13);
       border-radius: 18px;
       padding: 24px;
       display: flex;
       flex-direction: column;
       overflow: hidden;
       position: relative;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.1);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .card.card-hover {
+      border-color: rgba(255,255,255,0.26);
+      box-shadow: 0 12px 48px rgba(0,0,0,0.35),
+                  inset 0 1px 0 rgba(255,255,255,0.18),
+                  inset 0 0 0 1px rgba(255,255,255,0.07);
     }
 
     .card-label {
@@ -48,22 +75,23 @@
       text-transform: uppercase;
       letter-spacing: 0.13em;
       color: rgba(255,255,255,0.22);
-      margin-bottom: 18px;
+      margin-bottom: 14px;
       flex-shrink: 0;
     }
 
     /* ── Pomodoro ─────────────────────────────────────────────────────────── */
     #pomodoro-card {
-      grid-column: 1;
-      grid-row: 1 / 3;
+      grid-column: 2;
+      grid-row: 2;
+      padding: 20px 22px;
     }
 
     #timer-display {
-      font-size: 84px;
+      font-size: 68px;
       font-weight: 100;
       color: #efefef;
       font-variant-numeric: tabular-nums;
-      letter-spacing: -4px;
+      letter-spacing: -3px;
       line-height: 1;
       transition: color 0.4s;
     }
@@ -76,7 +104,7 @@
       display: flex;
       align-items: center;
       gap: 7px;
-      margin-top: 10px;
+      margin-top: 8px;
     }
 
     #timer-dot {
@@ -107,24 +135,24 @@
 
     #timer-controls {
       display: flex;
-      gap: 10px;
-      margin-top: 22px;
+      gap: 8px;
+      margin-top: 14px;
     }
 
     .timer-btn {
-      width: 46px;
-      height: 46px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       background: transparent;
       border: 1.5px solid rgba(255,255,255,0.12);
       color: rgba(255,255,255,0.55);
-      font-size: 24px;
+      font-size: 22px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       font-family: inherit;
-      transition: border-color 0.15s, background 0.15s, color 0.15s, transform 0.1s;
+      transition: border-color 0.15s, background 0.15s, color 0.15s, transform 0.15s;
       position: relative;
       z-index: 1;
     }
@@ -133,6 +161,7 @@
       border-color: rgba(255,255,255,0.35);
       background: rgba(255,255,255,0.07);
       color: rgba(255,255,255,0.9);
+      transform: scale(1.1);
     }
 
     .timer-btn:active {
@@ -144,7 +173,7 @@
       font-size: 10px;
       color: rgba(255,255,255,0.2);
       text-align: center;
-      margin-top: 5px;
+      margin-top: 4px;
       letter-spacing: 0.06em;
     }
 
@@ -152,18 +181,22 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 8px;
-      margin-top: 18px;
+      margin-top: 14px;
     }
 
     .timer-action-btn {
-      height: 42px;
+      height: 40px;
       border-radius: 12px;
       font-size: 13px;
       font-weight: 600;
       font-family: inherit;
       cursor: pointer;
       letter-spacing: 0.04em;
-      transition: background 0.15s, border-color 0.15s, color 0.15s, opacity 0.15s;
+      transition: background 0.15s, border-color 0.15s, color 0.15s, opacity 0.15s, transform 0.15s;
+    }
+
+    .timer-action-btn.hovered {
+      transform: scale(1.05);
     }
 
     #btn-start {
@@ -172,7 +205,8 @@
       color: #5cffa8;
     }
 
-    #btn-start:not(:disabled):hover {
+    #btn-start:not(:disabled):hover,
+    #btn-start.hovered {
       background: rgba(92,255,168,0.2);
       border-color: rgba(92,255,168,0.5);
     }
@@ -188,7 +222,8 @@
       color: rgba(255,255,255,0.38);
     }
 
-    #btn-stop:not(:disabled):hover {
+    #btn-stop:not(:disabled):hover,
+    #btn-stop.hovered {
       background: rgba(255,80,80,0.1);
       border-color: rgba(255,100,100,0.3);
       color: rgba(255,140,140,0.9);
@@ -199,39 +234,15 @@
       cursor: default;
     }
 
-    #timer-footer {
-      margin-top: auto;
-      padding-top: 16px;
-      border-top: 1px solid rgba(255,255,255,0.06);
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-    }
-
-    .hint-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 11px;
-      color: rgba(255,255,255,0.22);
-    }
-
-    .hint-glyph {
-      font-size: 13px;
-      line-height: 1;
-      width: 18px;
-      text-align: center;
-    }
-
     /* ── Calendar ─────────────────────────────────────────────────────────── */
     #calendar-card {
-      grid-column: 2;
+      grid-column: 1;
       grid-row: 1 / 3;
-      padding: 26px 28px;
+      padding: 26px 32px;
     }
 
     #cal-month-title {
-      font-size: 22px;
+      font-size: 24px;
       font-weight: 600;
       color: #efefef;
       letter-spacing: -0.3px;
@@ -240,38 +251,40 @@
     #calendar-grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
-      gap: 2px;
+      grid-template-rows: auto repeat(6, 1fr);
+      gap: 3px;
       flex: 1;
-      margin-top: 4px;
+      min-height: 0;
+      margin-top: 6px;
     }
 
     .cal-header {
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 700;
       color: rgba(255,255,255,0.22);
       text-align: center;
-      padding: 5px 0 8px;
+      padding: 5px 0 10px;
       letter-spacing: 0.06em;
     }
 
     .cal-day {
-      aspect-ratio: 1;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 13px;
+      font-size: 16px;
       color: rgba(255,255,255,0.55);
-      border-radius: 9px;
+      border-radius: 10px;
       cursor: pointer;
       background: transparent;
       border: none;
       font-family: inherit;
-      transition: background 0.12s, color 0.12s;
+      transition: background 0.12s, color 0.12s, transform 0.15s;
     }
 
     .cal-day.hovered {
       background: rgba(255,255,255,0.08);
       color: rgba(255,255,255,0.9);
+      transform: scale(1.12);
     }
 
     .cal-day:active {
@@ -294,126 +307,128 @@
 
     /* ── Weather ──────────────────────────────────────────────────────────── */
     #weather-card {
-      grid-column: 3;
+      grid-column: 2;
       grid-row: 1;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
+      padding: 20px 22px;
       gap: 0;
-      padding: 20px;
     }
 
-    #weather-card .card-label {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      margin-bottom: 0;
+    #weather-main {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 4px;
     }
 
     #weather-icon {
-      font-size: 44px;
+      font-size: 38px;
       line-height: 1;
-      margin-bottom: 10px;
-      filter: saturate(0.4) opacity(0.65);
+      flex-shrink: 0;
     }
 
-    #weather-text {
+    #weather-temp {
+      font-size: 44px;
+      font-weight: 200;
+      color: #efefef;
+      letter-spacing: -2px;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    #weather-unit {
+      font-size: 20px;
+      font-weight: 400;
+      color: rgba(255,255,255,0.4);
+      vertical-align: super;
+    }
+
+    #weather-condition {
       font-size: 13px;
-      font-weight: 600;
-      color: rgba(255,255,255,0.45);
-      margin-bottom: 4px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.5);
+      margin-top: 8px;
     }
 
-    #weather-sub {
+    #weather-detail {
       font-size: 11px;
-      color: rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.25);
+      margin-top: 4px;
       line-height: 1.6;
     }
 
-    /* ── Gesture Card ─────────────────────────────────────────────────────── */
-    #gesture-card {
-      grid-column: 3;
-      grid-row: 2;
-      padding: 20px;
-      gap: 0;
-    }
-
-    #gesture-name {
-      font-size: 17px;
-      font-weight: 600;
-      color: rgba(255,255,255,0.75);
-      letter-spacing: -0.2px;
-      margin-top: 2px;
-      text-transform: capitalize;
-      transition: color 0.25s;
-      line-height: 1.2;
-    }
-
-    #gesture-name.active {
-      color: #5cffa8;
-    }
-
-    #gesture-action {
-      font-size: 10px;
-      color: rgba(255,255,255,0.22);
-      margin-top: 5px;
-      line-height: 1.4;
-    }
-
-    #finger-pips {
-      display: flex;
-      gap: 7px;
+    #weather-location {
       margin-top: auto;
-      align-items: flex-end;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.18);
     }
 
-    .finger-pip-wrap {
+    #weather-error {
+      font-size: 11px;
+      color: rgba(255,100,100,0.5);
+      margin-top: 6px;
+      display: none;
+    }
+
+    /* ── Hand Panel (top-right) ───────────────────────────────────────────── */
+    #hand-panel {
+      position: fixed;
+      top: 20px;
+      right: 20px;
       display: flex;
       flex-direction: column;
+      align-items: flex-end;
+      gap: 12px;
+      z-index: 100;
+    }
+
+    #hand-pills {
+      display: flex;
+      flex-direction: row;
+      gap: 6px;
       align-items: center;
-      gap: 5px;
     }
 
-    .finger-pip {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.1);
-      border: 1.5px solid rgba(255,255,255,0.14);
-      transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
-    }
-
-    .finger-pip.extended {
-      background: #5cffa8;
-      border-color: #5cffa8;
-      box-shadow: 0 0 6px rgba(92,255,168,0.55);
-    }
-
-    .finger-pip-label {
-      font-size: 8px;
-      color: rgba(255,255,255,0.18);
-      letter-spacing: 0.05em;
+    .hand-pill {
+      font-size: 10px;
       font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      padding: 5px 11px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.04);
+      color: rgba(255,255,255,0.25);
+      backdrop-filter: blur(16px) saturate(160%);
+      -webkit-backdrop-filter: blur(16px) saturate(160%);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+      transition: color 0.3s, background 0.3s, border-color 0.3s, box-shadow 0.3s;
     }
 
-    /* ── PiP Webcam ───────────────────────────────────────────────────────── */
+    .hand-pill.pill-active {
+      color: #5cffa8;
+      background: rgba(92,255,168,0.1);
+      border-color: rgba(92,255,168,0.35);
+      box-shadow: 0 0 10px rgba(92,255,168,0.15);
+    }
+
     #pip-container {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      width: 300px;
-      height: 224px;
+      width: 280px;
+      height: 210px;
       border-radius: 14px;
       overflow: hidden;
-      border: 1px solid rgba(255,255,255,0.07);
-      box-shadow: 0 12px 48px rgba(0,0,0,0.6);
-      z-index: 100;
-      background: #080808;
+      border: 1px solid rgba(255,255,255,0.14);
+      box-shadow: 0 12px 48px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.1);
+      background: rgba(0,0,0,0.35);
+      position: relative;
     }
 
     #webcam {
-      width: 300px;
-      height: 224px;
+      width: 280px;
+      height: 210px;
       object-fit: cover;
       transform: scaleX(-1);
       display: block;
@@ -424,19 +439,107 @@
       position: absolute;
       top: 0;
       left: 0;
-      width: 300px;
-      height: 224px;
+      width: 280px;
+      height: 210px;
     }
 
-    #pip-badge {
-      position: absolute;
-      bottom: 9px;
-      left: 11px;
-      font-size: 9px;
-      color: rgba(255,255,255,0.35);
+    #hand-tips {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 280px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 14px;
+      padding: 14px 16px;
+      backdrop-filter: blur(16px) saturate(160%);
+      -webkit-backdrop-filter: blur(16px) saturate(160%);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+
+    .hand-tip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.6);
+      line-height: 1.4;
+    }
+
+    .hand-tip-glyph {
+      font-size: 15px;
+      width: 20px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    #gesture-widget {
+      width: 280px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 14px;
+      padding: 12px 16px;
+      backdrop-filter: blur(16px) saturate(160%);
+      -webkit-backdrop-filter: blur(16px) saturate(160%);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.1);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    #gesture-widget-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.6);
+      text-transform: capitalize;
+      letter-spacing: -0.1px;
+      transition: color 0.25s;
+    }
+
+    #gesture-widget-name.active {
+      color: #5cffa8;
+    }
+
+    #gesture-widget-action {
+      font-size: 11px;
+      color: rgba(255,255,255,0.28);
+      margin-top: 8px;
+    }
+
+    #gesture-widget-pips {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .gw-pip-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .gw-pip {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      border: 1.5px solid rgba(255,255,255,0.14);
+      transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .gw-pip.extended {
+      background: #5cffa8;
+      border-color: #5cffa8;
+      box-shadow: 0 0 5px rgba(92,255,168,0.5);
+    }
+
+    .gw-pip-label {
+      font-size: 8px;
+      color: rgba(255,255,255,0.18);
+      letter-spacing: 0.05em;
       font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
     }
 
     /* ── Cursor Overlay ───────────────────────────────────────────────────── */
@@ -450,21 +553,23 @@
       z-index: 600;
     }
 
-    /* ── Init HUD (camera status only) ───────────────────────────────────── */
+    /* ── Init HUD ─────────────────────────────────────────────────────────── */
     #init-hud {
       position: fixed;
       top: 20px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(13,13,13,0.85);
-      color: rgba(255,255,255,0.6);
-      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.05);
+      color: rgba(255,255,255,0.7);
+      border: 1px solid rgba(255,255,255,0.18);
       padding: 8px 16px;
       border-radius: 20px;
       font-size: 12px;
       font-weight: 500;
       z-index: 300;
-      backdrop-filter: blur(14px);
+      backdrop-filter: blur(16px) saturate(160%);
+      -webkit-backdrop-filter: blur(16px) saturate(160%);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.12);
       letter-spacing: 0.03em;
       white-space: nowrap;
       pointer-events: none;
@@ -492,12 +597,15 @@
     }
 
     #modal {
-      background: #191919;
-      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(24px) saturate(160%);
+      -webkit-backdrop-filter: blur(24px) saturate(160%);
+      border: 1px solid rgba(255,255,255,0.18);
       border-radius: 22px;
       padding: 36px;
       min-width: 300px;
-      box-shadow: 0 24px 80px rgba(0,0,0,0.7);
+      box-shadow: 0 24px 80px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.18);
+      position: relative;
     }
 
     #modal-date-display {
@@ -523,33 +631,63 @@
       border: 1px solid rgba(255,255,255,0.06);
       border-radius: 12px;
       padding: 14px 16px;
-      margin-bottom: 22px;
     }
 
-    #modal-close {
-      background: rgba(255,255,255,0.07);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 12px;
-      padding: 11px 22px;
+    .modal-x {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.14);
+      color: rgba(255,255,255,0.5);
+      font-size: 14px;
       cursor: pointer;
-      color: rgba(255,255,255,0.65);
-      font-size: 13px;
-      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-family: inherit;
-      transition: background 0.12s, color 0.12s;
-      letter-spacing: 0.02em;
+      transition: background 0.12s, color 0.12s, transform 0.12s;
     }
 
-    #modal-close.hovered,
-    #modal-close:hover {
-      background: rgba(255,255,255,0.12);
+    .modal-x:hover,
+    .modal-x.hovered {
+      background: rgba(255,255,255,0.16);
       color: rgba(255,255,255,0.9);
+      transform: scale(1.1);
     }
 
     /* ── Carousel ─────────────────────────────────────────────────────────── */
     #carousel-section {
       width: min(960px, calc(100vw - 32px));
       flex-shrink: 0;
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(16px) saturate(160%);
+      -webkit-backdrop-filter: blur(16px) saturate(160%);
+      border: 1px solid rgba(255,255,255,0.13);
+      border-radius: 18px;
+      padding: 20px 24px 20px;
+      position: relative;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.1);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    #carousel-section.card-hover {
+      border-color: rgba(255,255,255,0.26);
+      box-shadow: 0 12px 48px rgba(0,0,0,0.35),
+                  inset 0 1px 0 rgba(255,255,255,0.18),
+                  inset 0 0 0 1px rgba(255,255,255,0.07);
+    }
+
+    #carousel-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.13em;
+      color: rgba(255,255,255,0.22);
+      margin-bottom: 14px;
     }
 
     #carousel-viewport {
@@ -626,7 +764,7 @@
       justify-content: center;
       font-family: inherit;
       line-height: 1;
-      transition: background 0.12s, border-color 0.12s, color 0.12s, transform 0.1s;
+      transition: background 0.12s, border-color 0.12s, color 0.12s, transform 0.15s;
     }
 
     .carousel-arrow:hover {
@@ -641,6 +779,7 @@
       background: rgba(255,255,255,0.1);
       border-color: rgba(255,255,255,0.22);
       color: rgba(255,255,255,0.88);
+      transform: scale(1.1);
     }
 
     #carousel-bar {
@@ -670,9 +809,146 @@
       color: rgba(255,255,255,0.16);
       letter-spacing: 0.07em;
     }
+
+    /* ── Weather Modal ───────────────────────────────────────────────────── */
+    #weather-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      z-index: 500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(10px);
+    }
+
+    #weather-modal-overlay.visible {
+      display: flex;
+    }
+
+    #weather-modal {
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(24px) saturate(160%);
+      -webkit-backdrop-filter: blur(24px) saturate(160%);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 24px;
+      padding: 36px 40px;
+      width: min(680px, calc(100vw - 48px));
+      box-shadow: 0 28px 90px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.18);
+      position: relative;
+    }
+
+    #wm-location {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: rgba(255,255,255,0.22);
+      margin-bottom: 20px;
+    }
+
+    #wm-current {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      margin-bottom: 24px;
+    }
+
+    #wm-icon {
+      font-size: 56px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    #wm-current-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    #wm-temp {
+      font-size: 52px;
+      font-weight: 200;
+      color: #efefef;
+      letter-spacing: -2px;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    #wm-condition {
+      font-size: 15px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.55);
+    }
+
+    #wm-detail {
+      font-size: 12px;
+      color: rgba(255,255,255,0.28);
+      margin-top: 2px;
+    }
+
+    #wm-forecast-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.13em;
+      color: rgba(255,255,255,0.22);
+      margin-bottom: 14px;
+    }
+
+    #wm-forecast {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+    }
+
+    .wm-day {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.13);
+      border-radius: 14px;
+      padding: 12px 6px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+
+    .wm-day-name {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.35);
+    }
+
+    .wm-day-icon {
+      font-size: 22px;
+      line-height: 1;
+    }
+
+    .wm-day-hi {
+      font-size: 14px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.8);
+    }
+
+    .wm-day-lo {
+      font-size: 11px;
+      color: rgba(255,255,255,0.3);
+    }
+
   </style>
 </head>
 <body>
+
+  <!-- ── Background Video ──────────────────────────────────────────────── -->
+  <video id="bg-video" autoplay loop muted playsinline>
+    <source src="https://res.cloudinary.com/dku1fzupk/video/upload/v1775757027/Hero_background_filled_1_golqgc.mp4" type="video/mp4">
+  </video>
+  <div id="bg-scrim"></div>
 
   <!-- ── Bento Grid ─────────────────────────────────────────────────────── -->
   <div class="bento">
@@ -699,16 +975,6 @@
           <div class="timer-btn-label">+1 min</div>
         </div>
       </div>
-      <div id="timer-footer">
-        <div class="hint-row">
-          <span class="hint-glyph">✊</span>
-          <span>Fist — reset</span>
-        </div>
-        <div class="hint-row">
-          <span class="hint-glyph">☝️</span>
-          <span>Point + dwell — ±1.5 min</span>
-        </div>
-      </div>
     </div>
 
     <!-- Calendar -->
@@ -721,44 +987,23 @@
     <!-- Weather -->
     <div class="card" id="weather-card">
       <div class="card-label">Weather</div>
-      <div id="weather-icon">⛅</div>
-      <div id="weather-text">Coming soon</div>
-      <div id="weather-sub">Location &amp; API<br>not yet wired</div>
-    </div>
-
-    <!-- Gesture Status -->
-    <div class="card" id="gesture-card">
-      <div class="card-label">Gesture</div>
-      <div id="gesture-name">none</div>
-      <div id="gesture-action">show your hand</div>
-      <div id="finger-pips">
-        <div class="finger-pip-wrap">
-          <div class="finger-pip" id="pip-thumb"></div>
-          <div class="finger-pip-label">T</div>
-        </div>
-        <div class="finger-pip-wrap">
-          <div class="finger-pip" id="pip-index"></div>
-          <div class="finger-pip-label">I</div>
-        </div>
-        <div class="finger-pip-wrap">
-          <div class="finger-pip" id="pip-middle"></div>
-          <div class="finger-pip-label">M</div>
-        </div>
-        <div class="finger-pip-wrap">
-          <div class="finger-pip" id="pip-ring"></div>
-          <div class="finger-pip-label">R</div>
-        </div>
-        <div class="finger-pip-wrap">
-          <div class="finger-pip" id="pip-pinky"></div>
-          <div class="finger-pip-label">P</div>
+      <div id="weather-main">
+        <div id="weather-icon">—</div>
+        <div>
+          <div id="weather-temp"><span id="weather-temp-val">—</span><span id="weather-unit">°F</span></div>
         </div>
       </div>
+      <div id="weather-condition">Loading…</div>
+      <div id="weather-detail"></div>
+      <div id="weather-error">Could not load weather</div>
+      <div id="weather-location">New York City</div>
     </div>
 
   </div>
 
   <!-- ── Photo Carousel ────────────────────────────────────────────────── -->
   <div id="carousel-section">
+    <div id="carousel-label" class="card-label">Images</div>
     <div id="carousel-viewport">
       <div id="carousel-track"></div>
     </div>
@@ -773,11 +1018,54 @@
   <!-- ── Cursor Overlay ─────────────────────────────────────────────────── -->
   <canvas id="cursor-canvas"></canvas>
 
-  <!-- ── PiP Webcam ─────────────────────────────────────────────────────── -->
-  <div id="pip-container">
-    <video id="webcam" autoplay playsinline muted></video>
-    <canvas id="skeleton-canvas" width="300" height="224"></canvas>
-    <div id="pip-badge">Hand Tracking</div>
+  <!-- ── Hand Panel (top-right) ────────────────────────────────────────── -->
+  <div id="hand-panel">
+    <div id="pip-container">
+      <video id="webcam" autoplay playsinline muted></video>
+      <canvas id="skeleton-canvas" width="280" height="210"></canvas>
+    </div>
+    <div id="gesture-widget">
+      <div id="hand-pills">
+        <div class="hand-pill pill-active" id="pill-show-hand">Show hand</div>
+        <div class="hand-pill" id="pill-tracking">Tracking hand</div>
+      </div>
+      <div>
+        <div id="gesture-widget-name">none</div>
+        <div id="gesture-widget-action">show your hand</div>
+      </div>
+      <div id="gesture-widget-pips">
+        <div class="gw-pip-wrap">
+          <div class="gw-pip" id="gw-pip-thumb"></div>
+          <div class="gw-pip-label">T</div>
+        </div>
+        <div class="gw-pip-wrap">
+          <div class="gw-pip" id="gw-pip-index"></div>
+          <div class="gw-pip-label">I</div>
+        </div>
+        <div class="gw-pip-wrap">
+          <div class="gw-pip" id="gw-pip-middle"></div>
+          <div class="gw-pip-label">M</div>
+        </div>
+        <div class="gw-pip-wrap">
+          <div class="gw-pip" id="gw-pip-ring"></div>
+          <div class="gw-pip-label">R</div>
+        </div>
+        <div class="gw-pip-wrap">
+          <div class="gw-pip" id="gw-pip-pinky"></div>
+          <div class="gw-pip-label">P</div>
+        </div>
+      </div>
+    </div>
+    <div id="hand-tips">
+      <div class="hand-tip">
+        <span class="hand-tip-glyph">☝️</span>
+        <span>Point + hold 1s: select</span>
+      </div>
+      <div class="hand-tip">
+        <span class="hand-tip-glyph">↔</span>
+        <span>Swipe: browse images</span>
+      </div>
+    </div>
   </div>
 
   <!-- ── Init HUD ───────────────────────────────────────────────────────── -->
@@ -786,10 +1074,28 @@
   <!-- ── Calendar Modal ─────────────────────────────────────────────────── -->
   <div id="modal-overlay">
     <div id="modal">
+      <button class="modal-x" id="modal-close">✕</button>
       <div id="modal-date-display"></div>
       <div id="modal-day-name"></div>
       <div id="modal-content">No events scheduled for this date.</div>
-      <button id="modal-close">Close</button>
+    </div>
+  </div>
+
+  <!-- ── Weather Modal ────────────────────────────────────────────────── -->
+  <div id="weather-modal-overlay">
+    <div id="weather-modal">
+      <button class="modal-x" id="wm-close">✕</button>
+      <div id="wm-location">New York City</div>
+      <div id="wm-current">
+        <div id="wm-icon">—</div>
+        <div id="wm-current-info">
+          <div id="wm-temp"><span id="wm-temp-val">—</span><span style="font-size:22px;font-weight:400;color:rgba(255,255,255,0.4);vertical-align:super;">°F</span></div>
+          <div id="wm-condition">—</div>
+          <div id="wm-detail">—</div>
+        </div>
+      </div>
+      <div id="wm-forecast-label">7-Day Forecast</div>
+      <div id="wm-forecast"></div>
     </div>
   </div>
 
@@ -831,11 +1137,9 @@
       clearInterval(timerInterval);
       setRunningState(false);
       timerStatus.textContent = 'Paused';
-      console.log('[GESTURE] Timer → paused');
     } else {
       setRunningState(true);
       timerStatus.textContent = 'Running';
-      console.log('[GESTURE] Timer → started');
       timerInterval = setInterval(() => {
         if (timerSeconds === 0) {
           if (timerMinutes === 0) {
@@ -861,7 +1165,6 @@
     timerSeconds = 0;
     renderTimer();
     timerStatus.textContent = 'Reset';
-    console.log('[GESTURE] Timer → reset to 5:00');
     setTimeout(() => { if (!timerRunning) timerStatus.textContent = 'Ready'; }, 1200);
   }
 
@@ -871,7 +1174,6 @@
     timerSeconds = 0;
     renderTimer();
     timerStatus.textContent = `${timerMinutes} min`;
-    console.log(`[GESTURE] Timer adjusted → ${timerMinutes}:00`);
   }
 
   btnStart.addEventListener('click', () => { if (!timerRunning) startStopTimer(); });
@@ -932,31 +1234,155 @@
     document.getElementById('modal-date-display').textContent = dateStr;
     document.getElementById('modal-day-name').textContent     = dayName;
     modalOverlay.classList.add('visible');
-    console.log(`[GESTURE] Calendar tap → ${dateStr}`);
   }
 
   function closeModal() {
     modalOverlay.classList.remove('visible');
-    console.log('[GESTURE] Modal closed');
   }
 
   document.getElementById('modal-close').addEventListener('click', closeModal);
   modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) closeModal(); });
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // GESTURE CARD
+  // WEATHER — Open-Meteo (NYC, no API key required)
   // ═══════════════════════════════════════════════════════════════════════════
-  const gestureNameEl   = document.getElementById('gesture-name');
-  const gestureActionEl = document.getElementById('gesture-action');
-  const fingerPipEls    = [
-    document.getElementById('pip-thumb'),
-    document.getElementById('pip-index'),
-    document.getElementById('pip-middle'),
-    document.getElementById('pip-ring'),
-    document.getElementById('pip-pinky'),
+  const WMO_CODES = {
+    0:  { label: 'Clear sky',         icon: '☀️' },
+    1:  { label: 'Mostly clear',      icon: '🌤' },
+    2:  { label: 'Partly cloudy',     icon: '⛅' },
+    3:  { label: 'Overcast',          icon: '☁️' },
+    45: { label: 'Foggy',             icon: '🌫' },
+    48: { label: 'Icy fog',           icon: '🌫' },
+    51: { label: 'Light drizzle',     icon: '🌦' },
+    53: { label: 'Drizzle',           icon: '🌦' },
+    55: { label: 'Heavy drizzle',     icon: '🌧' },
+    61: { label: 'Light rain',        icon: '🌧' },
+    63: { label: 'Rain',              icon: '🌧' },
+    65: { label: 'Heavy rain',        icon: '🌧' },
+    71: { label: 'Light snow',        icon: '🌨' },
+    73: { label: 'Snow',              icon: '❄️' },
+    75: { label: 'Heavy snow',        icon: '❄️' },
+    77: { label: 'Snow grains',       icon: '🌨' },
+    80: { label: 'Rain showers',      icon: '🌦' },
+    81: { label: 'Rain showers',      icon: '🌧' },
+    82: { label: 'Violent showers',   icon: '⛈' },
+    85: { label: 'Snow showers',      icon: '🌨' },
+    86: { label: 'Heavy snow showers',icon: '❄️' },
+    95: { label: 'Thunderstorm',      icon: '⛈' },
+    96: { label: 'Thunderstorm + hail',icon: '⛈' },
+    99: { label: 'Thunderstorm + hail',icon: '⛈' },
+  };
+
+  let weatherCurrent  = null;
+  let weatherForecast = null;
+
+  const DAY_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  async function fetchWeather() {
+    const url =
+      'https://api.open-meteo.com/v1/forecast' +
+      '?latitude=40.7128&longitude=-74.0060' +
+      '&current=temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m' +
+      '&daily=weather_code,temperature_2m_max,temperature_2m_min' +
+      '&forecast_days=7' +
+      '&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America%2FNew_York';
+
+    try {
+      const res  = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const c    = data.current;
+
+      const code   = c.weather_code;
+      const meta   = WMO_CODES[code] || { label: 'Unknown', icon: '🌡' };
+      const temp   = Math.round(c.temperature_2m);
+      const wind   = Math.round(c.wind_speed_10m);
+      const humid  = Math.round(c.relative_humidity_2m);
+
+      weatherCurrent = { meta, temp, wind, humid };
+      weatherForecast = data.daily;
+
+      document.getElementById('weather-icon').textContent      = meta.icon;
+      document.getElementById('weather-temp-val').textContent  = temp;
+      document.getElementById('weather-condition').textContent = meta.label;
+      document.getElementById('weather-detail').textContent    = `Wind ${wind} mph · Humidity ${humid}%`;
+    } catch (err) {
+      console.error('[WEATHER]', err);
+      document.getElementById('weather-icon').textContent      = '—';
+      document.getElementById('weather-condition').textContent = '';
+      document.getElementById('weather-error').style.display   = 'block';
+    }
+  }
+
+  fetchWeather();
+  setInterval(fetchWeather, 10 * 60 * 1000);
+
+  // ── Weather Modal ──────────────────────────────────────────────────────────
+  const weatherModalOverlay = document.getElementById('weather-modal-overlay');
+
+  function openWeatherModal() {
+    if (weatherCurrent) {
+      document.getElementById('wm-icon').textContent       = weatherCurrent.meta.icon;
+      document.getElementById('wm-temp-val').textContent   = weatherCurrent.temp;
+      document.getElementById('wm-condition').textContent  = weatherCurrent.meta.label;
+      document.getElementById('wm-detail').textContent     = `Wind ${weatherCurrent.wind} mph · Humidity ${weatherCurrent.humid}%`;
+    }
+
+    const forecastEl = document.getElementById('wm-forecast');
+    forecastEl.innerHTML = '';
+    if (weatherForecast) {
+      const { time, weather_code, temperature_2m_max, temperature_2m_min } = weatherForecast;
+      time.forEach((dateStr, i) => {
+        const d    = new Date(dateStr + 'T12:00:00');
+        const name = DAY_SHORT[d.getDay()];
+        const m    = WMO_CODES[weather_code[i]] || { icon: '🌡' };
+        const hi   = Math.round(temperature_2m_max[i]);
+        const lo   = Math.round(temperature_2m_min[i]);
+        forecastEl.innerHTML += `
+          <div class="wm-day">
+            <div class="wm-day-name">${i === 0 ? 'Today' : name}</div>
+            <div class="wm-day-icon">${m.icon}</div>
+            <div class="wm-day-hi">${hi}°</div>
+            <div class="wm-day-lo">${lo}°</div>
+          </div>`;
+      });
+    } else {
+      forecastEl.innerHTML = '<div style="color:rgba(255,255,255,0.3);font-size:12px;">Forecast unavailable</div>';
+    }
+
+    weatherModalOverlay.classList.add('visible');
+  }
+
+  function closeWeatherModal() {
+    weatherModalOverlay.classList.remove('visible');
+  }
+
+  document.getElementById('wm-close').addEventListener('click', closeWeatherModal);
+  weatherModalOverlay.addEventListener('click', e => {
+    if (e.target === weatherModalOverlay) closeWeatherModal();
+  });
+
+  // ── Hand pills ─────────────────────────────────────────────────────────────
+  const pillShowHand = document.getElementById('pill-show-hand');
+  const pillTracking = document.getElementById('pill-tracking');
+
+  function setHandDetected(detected) {
+    pillShowHand.classList.toggle('pill-active', !detected);
+    pillTracking.classList.toggle('pill-active', detected);
+  }
+
+  // ── Gesture widget ─────────────────────────────────────────────────────────
+  const gwName   = document.getElementById('gesture-widget-name');
+  const gwAction = document.getElementById('gesture-widget-action');
+  const gwPips   = [
+    document.getElementById('gw-pip-thumb'),
+    document.getElementById('gw-pip-index'),
+    document.getElementById('gw-pip-middle'),
+    document.getElementById('gw-pip-ring'),
+    document.getElementById('gw-pip-pinky'),
   ];
 
-  const GESTURE_ACTIONS = {
+  const GW_ACTIONS = {
     open_hand: 'start / stop timer',
     fist:      'reset timer',
     pointing:  'hover to interact',
@@ -964,15 +1390,14 @@
     none:      'show your hand',
   };
 
-  function updateGestureCard(name, ext) {
-    const label = name.replace('_', ' ');
-    gestureNameEl.textContent  = label;
-    gestureActionEl.textContent = GESTURE_ACTIONS[name] || '—';
-    gestureNameEl.classList.toggle('active', name !== 'none' && name !== 'other');
+  function updateGestureWidget(name, ext) {
+    gwName.textContent   = name.replace('_', ' ');
+    gwAction.textContent = GW_ACTIONS[name] || '—';
+    gwName.classList.toggle('active', name !== 'none' && name !== 'other');
     if (ext) {
-      fingerPipEls.forEach((pip, i) => pip.classList.toggle('extended', !!ext[i]));
+      gwPips.forEach((pip, i) => pip.classList.toggle('extended', !!ext[i]));
     } else {
-      fingerPipEls.forEach(pip => pip.classList.remove('extended'));
+      gwPips.forEach(pip => pip.classList.remove('extended'));
     }
   }
 
@@ -1034,21 +1459,13 @@
     renderCarousel();
   }
 
-  function nextSlide() {
-    goToSlide(carouselIdx + 1);
-    console.log(`[GESTURE] Carousel → next (${carouselIdx})`);
-  }
-
-  function prevSlide() {
-    goToSlide(carouselIdx - 1);
-    console.log(`[GESTURE] Carousel → prev (${carouselIdx})`);
-  }
+  function nextSlide() { goToSlide(carouselIdx + 1); }
+  function prevSlide()  { goToSlide(carouselIdx - 1); }
 
   document.getElementById('carousel-prev').addEventListener('click', prevSlide);
   document.getElementById('carousel-next').addEventListener('click', nextSlide);
   renderCarousel();
 
-  // Swipe tracking
   const SWIPE_WIN    = 14;
   const SWIPE_THRESH = 0.16;
   const SWIPE_COOL   = 900;
@@ -1074,49 +1491,24 @@
 
     const R = 15;
 
-    // Soft drop shadow
     cursorCtx.shadowColor = 'rgba(0,0,0,0.5)';
     cursorCtx.shadowBlur  = 10;
-
-    // Outer ring
     cursorCtx.beginPath();
     cursorCtx.arc(x, y, R, 0, Math.PI * 2);
     cursorCtx.strokeStyle = 'rgba(255,255,255,0.88)';
     cursorCtx.lineWidth   = 2;
     cursorCtx.stroke();
-
-    // Center dot
-    cursorCtx.beginPath();
-    cursorCtx.arc(x, y, 3, 0, Math.PI * 2);
-    cursorCtx.fillStyle  = 'rgba(255,255,255,0.95)';
-    cursorCtx.shadowBlur = 0;
-    cursorCtx.fill();
-
-    // Crosshair spurs
     cursorCtx.shadowBlur  = 0;
-    cursorCtx.strokeStyle = 'rgba(255,255,255,0.4)';
-    cursorCtx.lineWidth   = 1.5;
-    const gap = 3, len = 8;
-    [[x-R-len,y, x-R-gap,y], [x+R+gap,y, x+R+len,y],
-     [x,y-R-len, x,y-R-gap], [x,y+R+gap, x,y+R+len]].forEach(([x1,y1,x2,y2]) => {
-      cursorCtx.beginPath();
-      cursorCtx.moveTo(x1, y1);
-      cursorCtx.lineTo(x2, y2);
-      cursorCtx.stroke();
-    });
 
-    // Dwell arc
     if (dwellProgress > 0) {
       cursorCtx.beginPath();
       cursorCtx.arc(x, y, R + 7, -Math.PI/2, -Math.PI/2 + Math.PI*2*dwellProgress);
       cursorCtx.strokeStyle = `rgba(92,255,168,${0.5 + dwellProgress * 0.5})`;
-      cursorCtx.lineWidth   = 3;
+      cursorCtx.lineWidth   = 2;
       cursorCtx.lineCap     = 'round';
       cursorCtx.stroke();
       cursorCtx.lineCap = 'butt';
     }
-
-    cursorCtx.shadowBlur = 0;
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -1132,8 +1524,6 @@
     return Math.sqrt((a.x-b.x)**2 + (a.y-b.y)**2 + ((a.z||0)-(b.z||0))**2);
   }
 
-  // Hysteresis thresholds: harder to enter extended, easier to stay extended.
-  // Prevents rapid flickering between states on borderline finger positions.
   const EXT_ON  = 1.35;
   const EXT_OFF = 1.18;
   const FINGER_TIPS = [4,  8, 12, 16, 20];
@@ -1170,12 +1560,9 @@
   let pendingFrameCount = 0;
   const HOLD_FRAMES     = 3;
 
-  // Cursor smoothing — lerp toward raw position each frame
   let smoothX = null, smoothY = null;
   const LERP  = 0.28;
 
-  // Map the inner 70% of the camera frame to the full screen so you
-  // don't need to reach the extreme edges of the camera to hit screen corners.
   const CAM_MARGIN = 0.15;
   function mapToScreen(nx, ny) {
     const fx = Math.max(0, Math.min(1, ((1 - nx) - CAM_MARGIN) / (1 - 2 * CAM_MARGIN)));
@@ -1183,12 +1570,32 @@
     return { x: fx * window.innerWidth, y: fy * window.innerHeight };
   }
 
-  let hoveredEl     = null;
+  let hoveredEl   = null;
+  let hoveredCard = null;
   let dwellTarget   = null;
   let dwellStart    = null;
   let dwellCooldown = 0;
-  const DWELL_MS    = 850;
+  const DWELL_MS    = 1000;
   const COOL_MS     = 1100;
+
+  function findHoveredContainer(x, y) {
+    if (x == null) return null;
+    const el = document.elementFromPoint(x, y);
+    if (!el) return null;
+    let node = el;
+    while (node && node !== document.body) {
+      if (node.classList.contains('card') || node.id === 'carousel-section') return node;
+      node = node.parentElement;
+    }
+    return null;
+  }
+
+  function setHoveredContainer(container) {
+    if (hoveredCard === container) return;
+    if (hoveredCard) hoveredCard.classList.remove('card-hover');
+    hoveredCard = container;
+    if (hoveredCard) hoveredCard.classList.add('card-hover');
+  }
 
   function getClickTarget(x, y) {
     const el = document.elementFromPoint(x, y);
@@ -1199,6 +1606,13 @@
     if (el.id === 'btn-stop'  && !btnStop.disabled)  return el;
     if (el.classList.contains('cal-day') && !el.classList.contains('empty')) return el;
     if (el.id === 'modal-close') return el;
+    if (el.id === 'wm-close') return el;
+    // Weather card — walk up to find it
+    let node = el;
+    while (node && node !== document.body) {
+      if (node.id === 'weather-card') return node;
+      node = node.parentElement;
+    }
     return null;
   }
 
@@ -1211,18 +1625,15 @@
 
   function fireDwellClick(el) {
     dwellCooldown = Date.now() + COOL_MS;
-    console.log(`[GESTURE] Dwell click → #${el.id || '?'} "${el.textContent.trim()}"`);
-    if      (el.id === 'btn-plus')  adjustTimer(1.5);
-    else if (el.id === 'btn-minus') adjustTimer(-1.5);
+    if      (el.id === 'btn-plus')    adjustTimer(1.5);
+    else if (el.id === 'btn-minus')   adjustTimer(-1.5);
     else if (el.id === 'btn-start' || el.id === 'btn-stop') startStopTimer();
+    else if (el.id === 'weather-card') openWeatherModal();
+    else if (el.id === 'wm-close')    closeWeatherModal();
     else    el.click();
   }
 
-  function onGestureChange(from, to, ext) {
-    console.log(`[GESTURE] ${from} → ${to}`);
-    updateGestureCard(to, ext);
-    if (to === 'fist') resetTimer();
-  }
+  function onGestureChange(from, to, ext) {}
 
   // ═══════════════════════════════════════════════════════════════════════════
   // MEDIAPIPE HANDS
@@ -1242,8 +1653,8 @@
 
   hands.onResults(results => {
     skeletonCtx.save();
-    skeletonCtx.clearRect(0, 0, 300, 224);
-    skeletonCtx.translate(300, 0);
+    skeletonCtx.clearRect(0, 0, 280, 210);
+    skeletonCtx.translate(280, 0);
     skeletonCtx.scale(-1, 1);
 
     if (results.multiHandLandmarks?.length) {
@@ -1260,24 +1671,23 @@
       });
       skeletonCtx.restore();
 
-      // ── Swipe detection ────────────────────────────────────────────────
+      setHandDetected(true);
+
       wristXHist.push(lm[0].x);
       if (wristXHist.length > SWIPE_WIN) wristXHist.shift();
       if (wristXHist.length >= SWIPE_WIN && Date.now() >= swipeCoolTs) {
         const delta = wristXHist[wristXHist.length - 1] - wristXHist[0];
         if (Math.abs(delta) > SWIPE_THRESH) {
-          // Mirrored display: increasing x = user moves hand left on screen = forward
           if (delta > 0) nextSlide(); else prevSlide();
           swipeCoolTs  = Date.now() + SWIPE_COOL;
           wristXHist   = [];
         }
       }
 
-      // ── Gesture stabilization ──────────────────────────────────────────
       const { name: raw, ext } = detectGesture(lm);
 
-      // Always update finger pips live
-      fingerPipEls.forEach((pip, i) => pip.classList.toggle('extended', !!ext[i]));
+      // Update finger pips live on every frame
+      gwPips.forEach((pip, i) => pip.classList.toggle('extended', !!ext[i]));
 
       if (raw === pendingGesture) {
         pendingFrameCount++;
@@ -1290,19 +1700,20 @@
         const prev = currentGesture;
         currentGesture = raw;
         onGestureChange(prev, currentGesture, ext);
+        updateGestureWidget(currentGesture, ext);
       }
 
-      // ── Cursor + dwell ────────────────────────────────────────────────
       if (currentGesture === 'pointing') {
         const tip = lm[8];
         const raw = mapToScreen(tip.x, tip.y);
 
-        // Lerp toward raw position for smooth cursor movement
         if (smoothX === null) { smoothX = raw.x; smoothY = raw.y; }
         else {
           smoothX += (raw.x - smoothX) * LERP;
           smoothY += (raw.y - smoothY) * LERP;
         }
+
+        setHoveredContainer(findHoveredContainer(smoothX, smoothY));
 
         const target = getClickTarget(smoothX, smoothY);
         setHovered(target);
@@ -1328,6 +1739,7 @@
         smoothX = null;
         smoothY = null;
         setHovered(null);
+        setHoveredContainer(null);
         dwellTarget = null;
         dwellStart  = null;
         drawCursor(null, null, 0);
@@ -1343,14 +1755,13 @@
       smoothY    = null;
       wristXHist = [];
       setHovered(null);
+      setHoveredContainer(null);
       dwellTarget = null;
       drawCursor(null, null, 0);
-      updateGestureCard('none', null);
+      setHandDetected(false);
+      updateGestureWidget('none', null);
     }
   });
-
-  // ── Start camera ──────────────────────────────────────────────────────────
-  let frameLoopRunning = false;
 
   async function startCamera() {
     try {
@@ -1361,12 +1772,9 @@
       await videoEl.play();
 
       initHud.textContent = 'Show your hand';
-      console.log('[GESTURE] Camera started — MediaPipe Hands active');
       setTimeout(() => initHud.classList.add('hidden'), 2400);
 
-      frameLoopRunning = true;
       async function processFrame() {
-        if (!frameLoopRunning) return;
         if (!videoEl.paused && !videoEl.ended && videoEl.readyState >= 2) {
           await hands.send({ image: videoEl });
         }
