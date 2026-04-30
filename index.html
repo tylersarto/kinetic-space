@@ -799,6 +799,16 @@
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 
   <script>
+  // Camera initialization
+  const webcam = document.getElementById('webcam');
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => {
+      webcam.srcObject = stream;
+    })
+    .catch(err => {
+      document.getElementById('init-hud').textContent = 'Camera access denied';
+      console.error('Camera error:', err);
+    });
   // ...existing code...
   </script>
 </body>
