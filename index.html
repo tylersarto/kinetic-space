@@ -794,7 +794,6 @@
   </div>
 
   <!-- ── MediaPipe CDN ──────────────────────────────────────────────────── -->
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 
@@ -1351,21 +1350,36 @@
   });
 
   // ── Start camera ──────────────────────────────────────────────────────────
-  const camera = new Camera(videoEl, {
-    onFrame: async () => { await hands.send({ image: videoEl }); },
-    width: 640, height: 480
-  });
+  let frameLoopRunning = false;
 
-  camera.start()
-    .then(() => {
+  async function startCamera() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: 640, height: 480, facingMode: 'user' }
+      });
+      videoEl.srcObject = stream;
+      await videoEl.play();
+
       initHud.textContent = 'Show your hand';
       console.log('[GESTURE] Camera started — MediaPipe Hands active');
       setTimeout(() => initHud.classList.add('hidden'), 2400);
-    })
-    .catch(err => {
+
+      frameLoopRunning = true;
+      async function processFrame() {
+        if (!frameLoopRunning) return;
+        if (!videoEl.paused && !videoEl.ended && videoEl.readyState >= 2) {
+          await hands.send({ image: videoEl });
+        }
+        requestAnimationFrame(processFrame);
+      }
+      requestAnimationFrame(processFrame);
+    } catch (err) {
       initHud.textContent = `Camera error: ${err.message}`;
       console.error('[GESTURE] Camera error:', err);
-    });
+    }
+  }
+
+  startCamera();
   </script>
 </body>
 </html>
