@@ -74,16 +74,48 @@
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.13em;
-      color: rgba(255,255,255,0.22);
+      color: #CDCDCD;
       margin-bottom: 14px;
       flex-shrink: 0;
     }
 
     /* ── Pomodoro ─────────────────────────────────────────────────────────── */
+    #pomodoro-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    #btn-reset {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: transparent;
+      border: 1.5px solid rgba(255,255,255,0.10);
+      color: rgba(255,255,255,0.30);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 0.15s, background 0.15s, color 0.15s, transform 0.15s;
+      flex-shrink: 0;
+    }
+
+    #btn-reset:hover {
+      border-color: rgba(255,255,255,0.30);
+      background: rgba(255,255,255,0.07);
+      color: rgba(255,255,255,0.80);
+    }
+
+    #btn-reset:active {
+      transform: scale(0.88) rotate(-45deg);
+    }
+
     #pomodoro-card {
       grid-column: 2;
       grid-row: 2;
-      padding: 20px 22px;
+      padding: 20px 22px 36px;
     }
 
     #timer-display {
@@ -381,7 +413,7 @@
       flex-direction: column;
       align-items: flex-end;
       gap: 12px;
-      z-index: 100;
+      z-index: 550;
     }
 
     #hand-pills {
@@ -586,14 +618,18 @@
       inset: 0;
       background: rgba(0,0,0,0.6);
       z-index: 500;
-      display: none;
+      display: flex;
       align-items: center;
       justify-content: center;
       backdrop-filter: blur(8px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.22s ease;
     }
 
     #modal-overlay.visible {
-      display: flex;
+      opacity: 1;
+      pointer-events: auto;
     }
 
     #modal {
@@ -686,7 +722,7 @@
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.13em;
-      color: rgba(255,255,255,0.22);
+      color: #CDCDCD;
       margin-bottom: 14px;
     }
 
@@ -806,14 +842,18 @@
       inset: 0;
       background: rgba(0,0,0,0.65);
       z-index: 500;
-      display: none;
+      display: flex;
       align-items: center;
       justify-content: center;
       backdrop-filter: blur(10px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.22s ease;
     }
 
     #weather-modal-overlay.visible {
-      display: flex;
+      opacity: 1;
+      pointer-events: auto;
     }
 
     #weather-modal {
@@ -930,6 +970,57 @@
       color: rgba(255,255,255,0.3);
     }
 
+    /* ── Portfolio Link ──────────────────────────────────────────────────── */
+    #portfolio-link {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 100px;
+      background: rgba(255,255,255,0.82);
+      border: none;
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: 700;
+      color: #333;
+      text-decoration: none;
+      cursor: pointer;
+      z-index: 400;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      transition: background 0.15s, transform 0.15s;
+      white-space: nowrap;
+    }
+
+    #portfolio-link:hover {
+      background: rgba(255,255,255,0.96);
+      transform: scale(1.04);
+    }
+
+    #portfolio-link:active {
+      transform: scale(0.97);
+    }
+
+    /* ── Modal pop-in animation ───────────────────────────────────────────── */
+    @keyframes modal-pop-in {
+      from {
+        opacity: 0;
+        transform: scale(0.88) translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    #modal-overlay.visible #modal,
+    #weather-modal-overlay.visible #weather-modal {
+      animation: modal-pop-in 0.3s cubic-bezier(0.34, 1.28, 0.64, 1) both;
+    }
+
   </style>
 </head>
 <body>
@@ -945,7 +1036,15 @@
 
     <!-- Pomodoro -->
     <div class="card" id="pomodoro-card">
-      <div class="card-label">Pomodoro</div>
+      <div id="pomodoro-header">
+        <div class="card-label" style="margin-bottom:0">Timer</div>
+        <button id="btn-reset" title="Reset timer">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style="pointer-events:none">
+            <path d="M2.5 8a5.5 5.5 0 1 0 1.1-3.3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            <polyline points="1,3.5 2.5,5 4,3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
       <div id="timer-display">05:00</div>
       <div id="timer-status-row">
         <div id="timer-dot"></div>
@@ -1052,11 +1151,24 @@
         <span>Point + hold 1s: select</span>
       </div>
       <div class="hand-tip">
+        <span class="hand-tip-glyph">↕</span>
+        <span>Open hand up/down: scroll</span>
+      </div>
+      <div class="hand-tip">
         <span class="hand-tip-glyph">↔</span>
         <span>Swipe: browse images</span>
       </div>
     </div>
   </div>
+
+  <!-- ── Portfolio Link ───────────────────────────────────────────────────── -->
+  <a id="portfolio-link" href="https://www.tylersarto.design/" target="_blank" rel="noopener noreferrer">
+    Visit tylersarto.design
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M5.5 2.5H2.5C1.948 2.5 1.5 2.948 1.5 3.5V11.5C1.5 12.052 1.948 12.5 2.5 12.5H10.5C11.052 12.5 11.5 12.052 11.5 11.5V8.5" stroke="#333" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M8 1.5H12.5M12.5 1.5V6M12.5 1.5L6 8" stroke="#333" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </a>
 
   <!-- ── Init HUD ───────────────────────────────────────────────────────── -->
   <div id="init-hud">Initializing camera…</div>
@@ -1099,6 +1211,7 @@
   // ═══════════════════════════════════════════════════════════════════════════
   let timerMinutes = 5;
   let timerSeconds = 0;
+  let timerSetMinutes = 5;
   let timerRunning = false;
   let timerInterval = null;
 
@@ -1151,7 +1264,7 @@
   function resetTimer() {
     clearInterval(timerInterval);
     setRunningState(false);
-    timerMinutes = 5;
+    timerMinutes = timerSetMinutes;
     timerSeconds = 0;
     renderTimer();
     timerStatus.textContent = 'Reset';
@@ -1160,7 +1273,8 @@
 
   function adjustTimer(delta) {
     if (timerRunning) return;
-    timerMinutes = Math.max(1, Math.min(99, timerMinutes + delta));
+    timerSetMinutes = Math.max(1, Math.min(99, timerSetMinutes + delta));
+    timerMinutes = timerSetMinutes;
     timerSeconds = 0;
     renderTimer();
     timerStatus.textContent = `${timerMinutes} min`;
@@ -1170,6 +1284,7 @@
   btnStop.addEventListener('click',  () => { if  (timerRunning) startStopTimer(); });
   document.getElementById('btn-minus').addEventListener('click', () => adjustTimer(-1));
   document.getElementById('btn-plus').addEventListener('click',  () => adjustTimer(1));
+  document.getElementById('btn-reset').addEventListener('click', resetTimer);
   renderTimer();
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -1373,7 +1488,7 @@
   ];
 
   const GW_ACTIONS = {
-    open_hand: 'start / stop timer',
+    open_hand: 'move up / down to scroll',
     fist:      'reset timer',
     pointing:  'hover to interact',
     other:     '—',
@@ -1425,7 +1540,9 @@
 
   function renderCarousel() {
     slideEls.forEach((el, i) => {
-      const off = i - carouselIdx;
+      let off = i - carouselIdx;
+      if (off > CAROUSEL_N / 2)  off -= CAROUSEL_N;
+      else if (off < -CAROUSEL_N / 2) off += CAROUSEL_N;
       let tx, tz, ry, scale, opacity, zi;
       if      (off ===  0) { tx=0;    tz=0;    ry=0;    scale=1;    opacity=1;    zi=5; }
       else if (off === -1) { tx=-58;  tz=-110; ry=38;   scale=0.78; opacity=0.68; zi=4; }
@@ -1453,11 +1570,19 @@
   document.getElementById('carousel-next').addEventListener('click', nextSlide);
   renderCarousel();
 
-  const SWIPE_WIN    = 14;
-  const SWIPE_THRESH = 0.16;
-  const SWIPE_COOL   = 900;
+  const SWIPE_WIN    = 8;
+  const SWIPE_VEL    = 0.016;
+  const SWIPE_COOL   = 1000;
   let wristXHist  = [];
+  let wristYHist  = [];
   let swipeCoolTs = 0;
+
+  const SCROLL_SCALE    = 450;
+  const SCROLL_DEADZONE = 0.009;
+  let   scrollWristY    = null;
+  let   scrollWristX    = null;
+  let   smoothWristY    = null;
+  let   smoothWristX    = null;
 
   // ═══════════════════════════════════════════════════════════════════════════
   // CURSOR CANVAS
@@ -1588,6 +1713,7 @@
     const el = document.elementFromPoint(x, y);
     if (!el) return null;
     if (el.id === 'btn-plus' || el.id === 'btn-minus') return el;
+    if (el.id === 'btn-reset') return el;
     if (el.id === 'carousel-prev' || el.id === 'carousel-next') return el;
     if (el.id === 'btn-start' && !btnStart.disabled) return el;
     if (el.id === 'btn-stop'  && !btnStop.disabled)  return el;
@@ -1660,15 +1786,29 @@
 
       setHandDetected(true);
 
-      wristXHist.push(lm[0].x);
-      if (wristXHist.length > SWIPE_WIN) wristXHist.shift();
-      if (wristXHist.length >= SWIPE_WIN && Date.now() >= swipeCoolTs) {
-        const delta = wristXHist[wristXHist.length - 1] - wristXHist[0];
-        if (Math.abs(delta) > SWIPE_THRESH) {
-          if (delta > 0) nextSlide(); else prevSlide();
-          swipeCoolTs  = Date.now() + SWIPE_COOL;
-          wristXHist   = [];
+      if (currentGesture === 'open_hand') {
+        wristXHist.push(lm[0].x);
+        wristYHist.push(lm[0].y);
+        if (wristXHist.length > SWIPE_WIN) wristXHist.shift();
+        if (wristYHist.length > SWIPE_WIN) wristYHist.shift();
+        if (wristXHist.length >= SWIPE_WIN && Date.now() >= swipeCoolTs) {
+          let totalDx = 0, totalDy = 0;
+          for (let j = 1; j < wristXHist.length; j++) {
+            totalDx += wristXHist[j] - wristXHist[j - 1];
+            totalDy += wristYHist[j] - wristYHist[j - 1];
+          }
+          const vx = totalDx / (wristXHist.length - 1);
+          const vy = totalDy / (wristYHist.length - 1);
+          if (Math.abs(vx) > SWIPE_VEL && Math.abs(vx) > Math.abs(vy) * 1.8) {
+            if (vx > 0) nextSlide(); else prevSlide();
+            swipeCoolTs = Date.now() + SWIPE_COOL;
+            wristXHist  = [];
+            wristYHist  = [];
+          }
         }
+      } else {
+        wristXHist = [];
+        wristYHist = [];
       }
 
       const { name: raw, ext } = detectGesture(lm);
@@ -1688,6 +1828,30 @@
         currentGesture = raw;
         onGestureChange(prev, currentGesture, ext);
         updateGestureWidget(currentGesture, ext);
+      }
+
+      // Smooth wrist position for scroll velocity
+      const wristY = lm[0].y;
+      const wristX = lm[0].x;
+      if (smoothWristY === null) smoothWristY = wristY;
+      else smoothWristY += (wristY - smoothWristY) * 0.22;
+      if (smoothWristX === null) smoothWristX = wristX;
+      else smoothWristX += (wristX - smoothWristX) * 0.22;
+
+      if (currentGesture === 'open_hand') {
+        if (scrollWristY !== null && scrollWristX !== null) {
+          const dy = smoothWristY - scrollWristY;
+          const dx = smoothWristX - scrollWristX;
+          // Only scroll if motion is predominantly vertical
+          if (Math.abs(dy) > SCROLL_DEADZONE && Math.abs(dy) > Math.abs(dx) * 1.8) {
+            window.scrollBy({ top: dy * SCROLL_SCALE, behavior: 'instant' });
+          }
+        }
+        scrollWristY = smoothWristY;
+        scrollWristX = smoothWristX;
+      } else {
+        scrollWristY = null;
+        scrollWristX = null;
       }
 
       if (currentGesture === 'pointing') {
@@ -1738,9 +1902,14 @@
       pendingGesture    = 'none';
       pendingFrameCount = 0;
       prevExt    = [false, false, false, false, false];
-      smoothX    = null;
-      smoothY    = null;
-      wristXHist = [];
+      smoothX      = null;
+      smoothY      = null;
+      smoothWristY = null;
+      smoothWristX = null;
+      scrollWristY = null;
+      scrollWristX = null;
+      wristXHist   = [];
+      wristYHist   = [];
       setHovered(null);
       setHoveredContainer(null);
       dwellTarget = null;
