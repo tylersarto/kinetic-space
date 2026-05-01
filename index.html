@@ -1395,17 +1395,17 @@
   // CAROUSEL
   // ═══════════════════════════════════════════════════════════════════════════
   const SLIDE_DATA = [
-    { label: 'Arizona',      img: 'assets/Arizona.png' },
-    { label: 'Castlefields', img: 'assets/Castlefields.png' },
-    { label: 'DUMBO',        img: 'assets/DUMBO.png' },
-    { label: 'Mountains',    img: 'assets/Mountains.png' },
-    { label: 'River',        img: 'assets/River.png' },
+    { label: 'Arizona',      img: 'https://res.cloudinary.com/dku1fzupk/image/upload/v1777593622/Arizona_v1slc8.png' },
+    { label: 'Mountains',    img: 'https://res.cloudinary.com/dku1fzupk/image/upload/v1777593622/Mountains_mnpmab.png' },
+    { label: 'Castlefields', img: 'https://res.cloudinary.com/dku1fzupk/image/upload/v1777593622/Castlefields_e3qlnt.png' },
+    { label: 'DUMBO',        img: 'https://res.cloudinary.com/dku1fzupk/image/upload/v1777593622/DUMBO_spovmd.png' },
+    { label: 'River',        img: 'https://res.cloudinary.com/dku1fzupk/image/upload/v1777593622/River_yprhgy.png' },
   ];
 
   const carouselTrack  = document.getElementById('carousel-track');
   const carouselBarEl  = document.getElementById('carousel-bar');
   const CAROUSEL_N     = SLIDE_DATA.length;
-  let   carouselIdx    = 2;
+  let   carouselIdx    = 3;
 
   const slideEls = SLIDE_DATA.map(s => {
     const el = document.createElement('div');
