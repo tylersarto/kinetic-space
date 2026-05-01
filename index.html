@@ -1720,10 +1720,11 @@
     if (el.classList.contains('cal-day') && !el.classList.contains('empty')) return el;
     if (el.id === 'modal-close') return el;
     if (el.id === 'wm-close') return el;
-    // Weather card — walk up to find it
+    // Walk up to find weather card or portfolio link
     let node = el;
     while (node && node !== document.body) {
       if (node.id === 'weather-card') return node;
+      if (node.id === 'portfolio-link') return node;
       node = node.parentElement;
     }
     return null;
